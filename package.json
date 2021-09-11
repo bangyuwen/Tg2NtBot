@@ -1,0 +1,25 @@
+{
+  "name": "tg2ntbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsc && node build/index.js | pino-pretty",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.29.3",
+    "@typescript-eslint/parser": "^4.29.3",
+    "eslint": "^7.32.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.24.2"
+  },
+  "dependencies": {
+    "@notionhq/client": "^0.3.1",
+    "dotenv": "^10.0.0",
+    "pino": "^7.0.0-rc.4",
+    "pino-pretty": "^7.0.0"
+  }
+}
