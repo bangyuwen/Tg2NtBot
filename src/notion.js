@@ -1,116 +1,96 @@
 import { Client } from '@notionhq/client';
+import moment from 'moment';
 import pino from 'pino';
 
 const logger = pino();
 
 const databaseId = '8dcd4c8da59d425996f4aa8bfa89124d';
 
-const notion = new Client({
-  auth: process.env.NOTION_TOKEN,
-});
+class Notion {
+  static getPageNameToday(date) {
+    const today = moment(date).format('YYYYMMDD');
+    return `Telegram ${today}`;
+  }
 
-const retrievePage = async () => {
-  const pageId = 'a885b256bde94d9c8aae7d1562ac7c04';
-  const response = await notion.pages.retrieve({ page_id: pageId });
-  logger.info(response);
-};
+  constructor() {
+    this.client = new Client({
+      auth: process.env.NOTION_TOKEN,
+    });
+  }
 
-const retrieveBlock = async () => {
-  const blockId = 'a885b256bde94d9c8aae7d1562ac7c04';
-  const response = await notion.blocks.retrieve({
-    block_id: blockId,
-  });
-  logger.info(response);
-};
+  async queryPage(date) {
+    const response = await this.client.databases.query({
+      database_id: databaseId,
+      filter: {
+        property: 'Name',
+        text: {
+          equals: Notion.getPageNameToday(date),
+        },
+      },
+    });
+    return response.results.length ? response.results[0].id : -1;
+  }
 
-const appendBlock = async () => {
-  logger.info('append block');
-  const blockId = 'a885b256bde94d9c8aae7d1562ac7c04';
-  const response = await notion.blocks.children.append({
-    block_id: blockId,
-    children: [
-      {
-        object: 'block',
-        type: 'paragraph',
-        paragraph: {
-          text: [
+  async createPage(date) {
+    const response = await this.client.pages.create({
+      parent: {
+        database_id: databaseId,
+      },
+      properties: {
+        Date: {
+          type: 'date',
+          date: {
+            start: date || moment().format('YYYY-MM-DD'),
+          },
+        },
+        Name: {
+          type: 'title',
+          title: [
             {
               type: 'text',
               text: {
-                content: 'abcde',
+                content: Notion.getPageNameToday(date),
               },
             },
           ],
         },
       },
-    ],
-  });
-  logger.info(response);
-};
+    });
+    return response.id;
+  }
 
-const retrieveBlockChild = async () => {
-  const blockId = 'a885b256bde94d9c8aae7d1562ac7c04';
-  const response = await notion.blocks.children.list({
-    block_id: blockId,
-    page_size: 50,
-  });
-  logger.info(response);
-};
-
-const createPage = async () => {
-  const response = await notion.pages.create({
-    parent: {
-      database_id: databaseId,
-    },
-    properties: {
-      Date: {
-        type: 'date',
-        date: {
-          start: '2021-09-01',
-        },
-      },
-      Name: {
-        type: 'title',
-        title: [
-          {
-            type: 'text',
-            text: {
-              content: 'Telegram 20210901',
-            },
+  async appendBlock(blockId, message) {
+    await this.client.blocks.children.append({
+      block_id: blockId,
+      children: [
+        {
+          object: 'block',
+          type: 'paragraph',
+          paragraph: {
+            text: [
+              {
+                type: 'text',
+                text: {
+                  content: message,
+                },
+              },
+            ],
           },
-        ],
-      },
-    },
-  });
-  logger.info(response);
-};
+        },
+      ],
+    });
+  }
 
-const getPageID = async () => {
-  const response = await notion.databases.query({
-    database_id: databaseId,
-    filter: {
-      property: 'Name',
-      text: {
-        equals: 'Telegram 20210902',
-      },
-    },
-  });
-  logger.info(response);
-};
+  async writeMessage(message) {
+    let id = await this.queryPage();
+    logger.info('id');
+    logger.info(id);
+    if (id === -1) {
+      id = await this.createPage();
+    }
+    logger.info(id);
+    this.appendBlock(id, message);
+  }
+}
 
-const getDBContent = async () => {
-  const response = await notion.databases.query({
-    database_id: databaseId,
-  });
-  logger.info(response);
-};
-
-export {
-  getDBContent,
-  getPageID,
-  createPage,
-  retrievePage,
-  retrieveBlock,
-  retrieveBlockChild,
-  appendBlock,
-};
+module.exports = Notion;

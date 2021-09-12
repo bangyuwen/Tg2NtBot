@@ -1,3 +1,5 @@
 node_modules
 index.js
 build
+.env
+coverage
