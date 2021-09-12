@@ -83,12 +83,9 @@ class Notion {
 
   async writeMessage(message) {
     let id = await this.queryPage();
-    logger.info('id');
-    logger.info(id);
     if (id === -1) {
       id = await this.createPage();
     }
-    logger.info(id);
     this.appendBlock(id, message);
   }
 }
