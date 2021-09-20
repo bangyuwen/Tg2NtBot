@@ -60,25 +60,29 @@ class Notion {
   }
 
   async appendBlock(blockId, message) {
-    await this.client.blocks.children.append({
-      block_id: blockId,
-      children: [
-        {
-          object: 'block',
-          type: 'paragraph',
-          paragraph: {
-            text: [
-              {
-                type: 'text',
-                text: {
-                  content: message,
+    try {
+      await this.client.blocks.children.append({
+        block_id: blockId,
+        children: [
+          {
+            object: 'block',
+            type: 'paragraph',
+            paragraph: {
+              text: [
+                {
+                  type: 'text',
+                  text: {
+                    content: message,
+                  },
                 },
-              },
-            ],
+              ],
+            },
           },
-        },
-      ],
-    });
+        ],
+      });
+    } catch (error) {
+      logger.error('something goes wrong when appending the block');
+    }
   }
 
   async writeMessage(message) {

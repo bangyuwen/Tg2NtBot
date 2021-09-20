@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node build/src/index.js",
-    "dev": "tsc && node build/src/index.js | pino-pretty",
+    "dev": "tsc && export $(xargs < .env) && node build/src/index.js | pino-pretty",
     "test": "jest"
   },
   "author": "",
@@ -21,6 +21,7 @@
     "babel-jest": "^27.1.1",
     "eslint": "^7.32.0",
     "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.24.2",
     "jest": "^27.1.1",
     "ts-node": "^10.2.1"
